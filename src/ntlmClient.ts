@@ -45,7 +45,7 @@ export function NtlmClient(
 	}
 
 	const client = axios.create(config);
-
+	let tries = 4;
 	client.interceptors.response.use(
 		response => {
 			return response;
@@ -99,7 +99,11 @@ export function NtlmClient(
 					}
 				}
 				console.log("sending request with config", error.config);
-
+				if (!tries) {
+					err.message = "[no tries left]" + err.message;
+					throw err;
+				}
+				tries--;
 				return client(error.config);
 			} else {
 				throw err;
