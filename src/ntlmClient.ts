@@ -98,7 +98,7 @@ export function NtlmClient(
 						});
 					}
 				}
-				console.log("sending request with config", error.config);
+				console.log("sending request with headers", error.config.headers);
 				if (!tries) {
 					err.message = "[no tries left]" + err.message;
 					throw err;
