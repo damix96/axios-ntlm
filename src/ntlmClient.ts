@@ -100,8 +100,7 @@ export function NtlmClient(
 				}
 				console.log("sending request with headers", error.config.headers);
 				if (!tries) {
-					err.message = "[no tries left]" + err.message;
-					throw err;
+					throw new Error("[no tries left]" + err.message);
 				}
 				tries--;
 				return client(error.config);
