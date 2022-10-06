@@ -53,7 +53,8 @@ export function NtlmClient(
 		async (err: AxiosError) => {
 			const error: AxiosResponse | undefined = err.response;
 			const wwwAuthenticateHeader: string = error?.headers["www-authenticate"];
-
+			console.log("request headers", error?.request?.headers);
+			console.log(error?.request?.toJSON());
 			if (error?.status === 401 && wwwAuthenticateHeader.includes("NTLM")) {
 				// This length check is a hack because SharePoint is awkward and will
 				// include the Negotiate option when responding with the T2 message
@@ -83,7 +84,7 @@ export function NtlmClient(
 					);
 					console.log("T3 message created", t3Msg);
 
-					error.config.headers["X-retry"] = "false";
+					// error.config.headers["X-retry"] = "false";
 					error.config.headers["Authorization"] = t3Msg;
 				}
 
