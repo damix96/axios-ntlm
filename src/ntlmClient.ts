@@ -46,6 +46,7 @@ export function NtlmClient(
 	// }
 	const client = axios.create(config);
 	let tries = 6;
+
 	client.interceptors.response.use(
 		response => {
 			return response;
@@ -54,19 +55,13 @@ export function NtlmClient(
 			const error: AxiosResponse | undefined = err.response;
 			const wwwAuthenticateHeader: string = error?.headers["www-authenticate"];
 			console.log(
+				{ tries },
 				"request headers",
 				error?.request.getHeaders(),
-				"shka",
-				error?.request.shouldKeepAlive,
-				"kat",
-				error?.request._keepAliveTimeout,
-				"agent",
-				error?.request.agent,
-
 				"data",
 				error?.data
 			);
-			console.log(Object.keys(error?.request));
+			// console.log(Object.keys(error?.request));
 			if (error?.status === 401 && wwwAuthenticateHeader.includes("NTLM")) {
 				// This length check is a hack because SharePoint is awkward and will
 				// include the Negotiate option when responding with the T2 message
@@ -128,9 +123,9 @@ export function NtlmClient(
 				tries--;
 
 				return new Promise(resolve => {
-					setImmediate(() => {
+					setTimeout(() => {
 						resolve(client(error.config));
-					});
+					}, 500);
 				});
 			} else {
 				throw err;
