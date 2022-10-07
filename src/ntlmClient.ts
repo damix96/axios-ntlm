@@ -5,6 +5,7 @@ import axios, {
 	AxiosResponse,
 } from "axios";
 import * as ntlm from "./ntlm";
+import * as antlm from "./alternative_ntlm";
 import * as https from "https";
 import * as http from "http";
 import devnull from "dev-null";
@@ -66,15 +67,24 @@ export function NtlmClient(
 						credentials.workstation!,
 						credentials.domain
 					);
-					console.log("T1 message created.", t1Msg);
-					error.config.headers["Authorization"] = t1Msg;
+					const at1Msg = antlm.createType1Message(credentials);
+
+					console.log("T1 message created.", t1Msg, "Alt:", at1Msg);
+					error.config.headers["Authorization"] = at1Msg;
 				} else {
 					console.log("Length is >= 50; Decoding T2 message");
 					const parsedT1Message =
 						wwwAuthenticateHeader?.match(/^NTLM\s+(.+?)(,|\s+|$)/)?.[1] || "";
 
 					const t2Msg = ntlm.decodeType2Message(parsedT1Message);
-					console.log("T2 Decoded", t2Msg, "Creating T3 message");
+					const at2Msg = antlm.parseType2Message(wwwAuthenticateHeader);
+					console.log(
+						"T2 Decoded",
+						t2Msg,
+						"Alt:",
+						at2Msg,
+						"Creating T3 message"
+					);
 					const t3Msg = ntlm.createType3Message(
 						t2Msg,
 						credentials.username,
@@ -82,10 +92,11 @@ export function NtlmClient(
 						credentials.workstation!,
 						credentials.domain
 					);
-					console.log("T3 message created", t3Msg);
+					const at3Msg = antlm.createType3Message(at2Msg, credentials);
+					console.log("T3 message created", t3Msg, "Alt:", at3Msg);
 
-					// error.config.headers["X-retry"] = "false";
-					error.config.headers["Authorization"] = t3Msg;
+					error.config.headers["X-retry"] = "false";
+					error.config.headers["Authorization"] = at3Msg;
 				}
 
 				if (error.config.responseType === "stream") {
