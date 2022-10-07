@@ -51,7 +51,8 @@ export function NtlmClient(
 			return response;
 		},
 		async (err: AxiosError) => {
-			const error: AxiosResponse | undefined = err.response;
+			const error: any = err.response;
+
 			if (
 				error &&
 				error.status === 401 &&
@@ -69,38 +70,27 @@ export function NtlmClient(
 					);
 
 					error.config.headers["Authorization"] = t1Msg;
-					try {
-						await axios.create()(error.config);
-					} catch (_err) {
-						if (
-							error &&
-							error.status === 401 &&
-							error.headers["www-authenticate"] &&
-							error.headers["www-authenticate"].includes("NTLM")
-						) {
-							const t2Msg = ntlm.decodeType2Message(
-								(error.headers["www-authenticate"].match(
-									/^NTLM\s+(.+?)(,|\s+|$)/
-								) || [])[1]
-							);
+				} else {
+					const t2Msg = ntlm.decodeType2Message(
+						(error.headers["www-authenticate"].match(
+							/^NTLM\s+(.+?)(,|\s+|$)/
+						) || [])[1]
+					);
 
-							const t3Msg = ntlm.createType3Message(
-								t2Msg,
-								credentials.username,
-								credentials.password,
-								credentials.workstation!,
-								credentials.domain
-							);
+					const t3Msg = ntlm.createType3Message(
+						t2Msg,
+						credentials.username,
+						credentials.password,
+						credentials.workstation!,
+						credentials.domain
+					);
 
-							error.config.headers["X-retry"] = "false";
-							error.config.headers["Authorization"] = t3Msg;
-							return axios.create()(error.config);
-						}
-					}
+					error.config.headers["X-retry"] = "false";
+					error.config.headers["Authorization"] = t3Msg;
 				}
 
 				if (error.config.responseType === "stream") {
-					const stream: http.IncomingMessage | undefined = err.response?.data;
+					const stream: http.IncomingMessage | any = err.response?.data;
 					// Read Stream is holding HTTP connection open in our
 					// TCP socket. Close stream to recycle back to the Agent.
 					if (stream && !stream.readableEnded) {
@@ -111,12 +101,7 @@ export function NtlmClient(
 					}
 				}
 
-				// return new Promise(resolve => {
-				// 	setTimeout(() => {
-				// 		resolve(client(error.config));
-				// 	}, 500);
-				// });
-				throw err;
+				return client(error.config);
 			} else {
 				throw err;
 			}
