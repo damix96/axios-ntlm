@@ -45,7 +45,7 @@ export function NtlmClient(
 	config.httpsAgent = new https.Agent({ keepAlive: true });
 	// }
 	const client = axios.create(config);
-	let tries = 4;
+	let tries = 6;
 	client.interceptors.response.use(
 		response => {
 			return response;
