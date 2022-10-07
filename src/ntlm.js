@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 // Original file https://raw.githubusercontent.com/elasticio/node-ntlm-client/master/lib/ntlm.js
 
-const os = require("os"),
-	flags = require("./flags"),
-	hash = require("./hash");
+const os = require('os'),
+	flags = require('./flags'),
+	hash = require('./hash');
 
 const NTLMSIGNATURE = "NTLMSSP\0";
 
@@ -13,10 +13,10 @@ function createType1Message(workstation, target) {
 		buf = new Buffer.alloc(1024);
 
 	workstation = workstation === undefined ? os.hostname() : workstation;
-	target = target === undefined ? "" : target;
+	target = target === undefined ? '' : target;
 
 	//signature
-	buf.write(NTLMSIGNATURE, pos, NTLMSIGNATURE.length, "ascii");
+	buf.write(NTLMSIGNATURE, pos, NTLMSIGNATURE.length, 'ascii');
 	pos += NTLMSIGNATURE.length;
 
 	//message type
@@ -24,14 +24,11 @@ function createType1Message(workstation, target) {
 	pos += 4;
 
 	//flags
-	buf.writeUInt32LE(
-		flags.NTLMFLAG_NEGOTIATE_OEM |
-			flags.NTLMFLAG_REQUEST_TARGET |
-			flags.NTLMFLAG_NEGOTIATE_NTLM_KEY |
-			flags.NTLMFLAG_NEGOTIATE_NTLM2_KEY |
-			flags.NTLMFLAG_NEGOTIATE_ALWAYS_SIGN,
-		pos
-	);
+	buf.writeUInt32LE(flags.NTLMFLAG_NEGOTIATE_OEM |
+						flags.NTLMFLAG_REQUEST_TARGET |
+						flags.NTLMFLAG_NEGOTIATE_NTLM_KEY |
+						flags.NTLMFLAG_NEGOTIATE_NTLM2_KEY |
+						flags.NTLMFLAG_NEGOTIATE_ALWAYS_SIGN, pos);
 	pos += 4;
 
 	//domain security buffer
@@ -43,7 +40,7 @@ function createType1Message(workstation, target) {
 	pos += 4;
 
 	if (target.length > 0) {
-		dataPos += buf.write(target, dataPos, "ascii");
+		dataPos += buf.write(target, dataPos, 'ascii');
 	}
 
 	//workstation security buffer
@@ -55,26 +52,23 @@ function createType1Message(workstation, target) {
 	pos += 4;
 
 	if (workstation.length > 0) {
-		dataPos += buf.write(workstation, dataPos, "ascii");
+		dataPos += buf.write(workstation, dataPos, 'ascii');
 	}
 
-	return "NTLM " + buf.toString("base64", 0, dataPos);
+	return 'NTLM ' + buf.toString('base64', 0, dataPos);
 }
 
 function decodeType2Message(str) {
 	if (str === undefined) {
-		throw new Error("Invalid argument");
+		throw new Error('Invalid argument');
 	}
 
 	//convenience
-	if (Object.prototype.toString.call(str) !== "[object String]") {
-		if (
-			str.hasOwnProperty("headers") &&
-			str.headers.hasOwnProperty("www-authenticate")
-		) {
-			str = str.headers["www-authenticate"];
+	if (Object.prototype.toString.call(str) !== '[object String]') {
+		if (str.hasOwnProperty('headers') && str.headers.hasOwnProperty('www-authenticate')) {
+			str = str.headers['www-authenticate'];
 		} else {
-			throw new Error("Invalid argument");
+			throw new Error('Invalid argument');
 		}
 	}
 
@@ -84,40 +78,40 @@ function decodeType2Message(str) {
 		str = ntlmMatch[1];
 	}
 
-	let buf = new Buffer.from(str, "base64"),
+	let buf = new Buffer.from(str, 'base64'),
 		obj = {};
 
 	//check signature
-	if (buf.toString("ascii", 0, NTLMSIGNATURE.length) !== NTLMSIGNATURE) {
-		throw new Error("Invalid message signature: " + str);
+	if (buf.toString('ascii', 0, NTLMSIGNATURE.length) !== NTLMSIGNATURE) {
+		throw new Error('Invalid message signature: ' + str);
 	}
 
 	//check message type
 	if (buf.readUInt32LE(NTLMSIGNATURE.length) !== 2) {
-		throw new Error("Invalid message type (no type 2)");
+		throw new Error('Invalid message type (no type 2)');
 	}
 
 	//read flags
 	obj.flags = buf.readUInt32LE(20);
 
-	obj.encoding = obj.flags & flags.NTLMFLAG_NEGOTIATE_OEM ? "ascii" : "ucs2";
+	obj.encoding = (obj.flags & flags.NTLMFLAG_NEGOTIATE_OEM) ? 'ascii' : 'ucs2';
 
-	obj.version = obj.flags & flags.NTLMFLAG_NEGOTIATE_NTLM2_KEY ? 2 : 1;
+	obj.version = (obj.flags & flags.NTLMFLAG_NEGOTIATE_NTLM2_KEY) ? 2 : 1;
 
 	obj.challenge = buf.slice(24, 32);
 
 	//read target name
-	obj.targetName = (function () {
+	obj.targetName = (function(){
 		let length = buf.readUInt16LE(12);
 		//skipping allocated space
 		let offset = buf.readUInt32LE(16);
 
 		if (length === 0) {
-			return "";
+			return '';
 		}
 
-		if (offset + length > buf.length || offset < 32) {
-			throw new Error("Bad type 2 message");
+		if ((offset + length) > buf.length || offset < 32) {
+			throw new Error('Bad type 2 message');
 		}
 
 		return buf.toString(obj.encoding, offset, offset + length);
@@ -125,7 +119,7 @@ function decodeType2Message(str) {
 
 	//read target info
 	if (obj.flags & flags.NTLMFLAG_NEGOTIATE_TARGET_INFO) {
-		obj.targetInfo = (function () {
+		obj.targetInfo = (function(){
 			let info = {};
 
 			let length = buf.readUInt16LE(40);
@@ -139,13 +133,13 @@ function decodeType2Message(str) {
 				return info;
 			}
 
-			if (offset + length > buf.length || offset < 32) {
-				throw new Error("Bad type 2 message");
+			if ((offset + length) > buf.length || offset < 32) {
+				throw new Error('Bad type 2 message');
 			}
 
 			let pos = offset;
 
-			while (pos < offset + length) {
+			while (pos < (offset + length)) {
 				let blockType = buf.readUInt16LE(pos);
 				pos += 2;
 				let blockLength = buf.readUInt16LE(pos);
@@ -160,27 +154,27 @@ function decodeType2Message(str) {
 
 				switch (blockType) {
 					case 1:
-						blockTypeStr = "SERVER";
+						blockTypeStr = 'SERVER';
 						break;
 					case 2:
-						blockTypeStr = "DOMAIN";
+						blockTypeStr = 'DOMAIN';
 						break;
 					case 3:
-						blockTypeStr = "FQDN";
+						blockTypeStr = 'FQDN';
 						break;
 					case 4:
-						blockTypeStr = "DNS";
+						blockTypeStr = 'DNS';
 						break;
 					case 5:
-						blockTypeStr = "PARENT_DNS";
+						blockTypeStr = 'PARENT_DNS';
 						break;
 					default:
-						blockTypeStr = "";
+						blockTypeStr = '';
 						break;
 				}
 
 				if (blockTypeStr) {
-					info[blockTypeStr] = buf.toString("ucs2", pos, pos + blockLength);
+					info[blockTypeStr] = buf.toString('ucs2', pos, pos + blockLength);
 				}
 
 				pos += blockLength;
@@ -188,7 +182,7 @@ function decodeType2Message(str) {
 
 			return {
 				parsed: info,
-				buffer: targetInfoBuffer,
+				buffer: targetInfoBuffer
 			};
 		})();
 	}
@@ -196,13 +190,7 @@ function decodeType2Message(str) {
 	return obj;
 }
 
-function createType3Message(
-	type2Message,
-	username,
-	password,
-	workstation,
-	target
-) {
+function createType3Message(type2Message, username, password, workstation, target) {
 	let dataPos = 52,
 		buf = new Buffer.alloc(1024);
 
@@ -215,7 +203,7 @@ function createType3Message(
 	}
 
 	//signature
-	buf.write(NTLMSIGNATURE, 0, NTLMSIGNATURE.length, "ascii");
+	buf.write(NTLMSIGNATURE, 0, NTLMSIGNATURE.length, 'ascii');
 
 	//message type
 	buf.writeUInt32LE(3, 8);
@@ -225,20 +213,8 @@ function createType3Message(
 
 		let ntlmHash = hash.createNTLMHash(password),
 			nonce = hash.createPseudoRandomValue(16),
-			lmv2 = hash.createLMv2Response(
-				type2Message,
-				username,
-				ntlmHash,
-				nonce,
-				target
-			),
-			ntlmv2 = hash.createNTLMv2Response(
-				type2Message,
-				username,
-				ntlmHash,
-				nonce,
-				target
-			);
+			lmv2 = hash.createLMv2Response(type2Message, username, ntlmHash, nonce, target),
+			ntlmv2 = hash.createNTLMv2Response(type2Message, username, ntlmHash, nonce, target);
 
 		//lmv2 security buffer
 		buf.writeUInt16LE(lmv2.length, 12);
@@ -247,7 +223,7 @@ function createType3Message(
 
 		lmv2.copy(buf, dataPos);
 		dataPos += lmv2.length;
-
+		
 		//ntlmv2 security buffer
 		buf.writeUInt16LE(ntlmv2.length, 20);
 		buf.writeUInt16LE(ntlmv2.length, 22);
@@ -279,44 +255,22 @@ function createType3Message(
 	}
 
 	//target name security buffer
-	buf.writeUInt16LE(
-		type2Message.encoding === "ascii" ? target.length : target.length * 2,
-		28
-	);
-	buf.writeUInt16LE(
-		type2Message.encoding === "ascii" ? target.length : target.length * 2,
-		30
-	);
+	buf.writeUInt16LE(type2Message.encoding === 'ascii' ? target.length : target.length * 2, 28);
+	buf.writeUInt16LE(type2Message.encoding === 'ascii' ? target.length : target.length * 2, 30);
 	buf.writeUInt32LE(dataPos, 32);
 
 	dataPos += buf.write(target, dataPos, type2Message.encoding);
 
 	//user name security buffer
-	buf.writeUInt16LE(
-		type2Message.encoding === "ascii" ? username.length : username.length * 2,
-		36
-	);
-	buf.writeUInt16LE(
-		type2Message.encoding === "ascii" ? username.length : username.length * 2,
-		38
-	);
+	buf.writeUInt16LE(type2Message.encoding === 'ascii' ? username.length : username.length * 2, 36);
+	buf.writeUInt16LE(type2Message.encoding === 'ascii' ? username.length : username.length * 2, 38);
 	buf.writeUInt32LE(dataPos, 40);
 
 	dataPos += buf.write(username, dataPos, type2Message.encoding);
 
 	//workstation name security buffer
-	buf.writeUInt16LE(
-		type2Message.encoding === "ascii"
-			? workstation.length
-			: workstation.length * 2,
-		44
-	);
-	buf.writeUInt16LE(
-		type2Message.encoding === "ascii"
-			? workstation.length
-			: workstation.length * 2,
-		46
-	);
+	buf.writeUInt16LE(type2Message.encoding === 'ascii' ? workstation.length : workstation.length * 2, 44);
+	buf.writeUInt16LE(type2Message.encoding === 'ascii' ? workstation.length : workstation.length * 2, 46);
 	buf.writeUInt32LE(dataPos, 48);
 
 	dataPos += buf.write(workstation, dataPos, type2Message.encoding);
@@ -331,11 +285,11 @@ function createType3Message(
 		buf.writeUInt32LE(type2Message.flags, 60);
 	}
 
-	return "NTLM " + buf.toString("base64", 0, dataPos);
+	return 'NTLM ' + buf.toString('base64', 0, dataPos);
 }
 
 module.exports = {
 	createType1Message,
 	decodeType2Message,
-	createType3Message,
+	createType3Message
 };
