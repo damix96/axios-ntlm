@@ -55,7 +55,7 @@ export function NtlmClient(
 			const wwwAuthenticateHeader: string = error?.headers["www-authenticate"];
 			console.log(
 				"request headers",
-				error?.request._headers,
+				error?.request.getHeaders(),
 				"shka",
 				error?.request.shouldKeepAlive,
 				"kat",
@@ -126,7 +126,12 @@ export function NtlmClient(
 					throw new Error("[no tries left]" + err.message);
 				}
 				tries--;
-				return client(error.config);
+
+				return new Promise(resolve => {
+					setImmediate(() => {
+						resolve(client(error.config));
+					});
+				});
 			} else {
 				throw err;
 			}
