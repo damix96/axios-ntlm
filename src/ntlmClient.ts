@@ -53,7 +53,20 @@ export function NtlmClient(
 		async (err: AxiosError) => {
 			const error: AxiosResponse | undefined = err.response;
 			const wwwAuthenticateHeader: string = error?.headers["www-authenticate"];
-			console.log("request headers", error?.request._headers);
+			console.log(
+				"request headers",
+				error?.request._headers,
+				"shka",
+				error?.request.shouldKeepAlive
+				"kat",
+				error?.request._keepAliveTimeout
+				"agent",
+				error?.request.agent
+				
+				"data",
+				error?.data
+
+			);
 			console.log(Object.keys(error?.request));
 			if (error?.status === 401 && wwwAuthenticateHeader.includes("NTLM")) {
 				// This length check is a hack because SharePoint is awkward and will
