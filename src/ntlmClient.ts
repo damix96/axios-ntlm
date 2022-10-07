@@ -37,14 +37,13 @@ export function NtlmClient(
 ): AxiosInstance {
 	let config: AxiosRequestConfig = AxiosConfig ?? {};
 
-	if (!config.httpAgent) {
-		config.httpAgent = new http.Agent({ keepAlive: true });
-	}
+	// if (!config.httpAgent) {
+	config.httpAgent = new http.Agent({ keepAlive: true });
+	// }
 
-	if (!config.httpsAgent) {
-		config.httpsAgent = new https.Agent({ keepAlive: true });
-	}
-
+	// if (!config.httpsAgent) {
+	config.httpsAgent = new https.Agent({ keepAlive: true });
+	// }
 	const client = axios.create(config);
 	let tries = 4;
 	client.interceptors.response.use(
@@ -70,7 +69,7 @@ export function NtlmClient(
 					const at1Msg = antlm.createType1Message(credentials);
 
 					console.log("T1 message created.", t1Msg, "Alt:", at1Msg);
-					error.config.headers["Authorization"] = at1Msg;
+					error.config.headers["Authorization"] = t1Msg;
 				} else {
 					console.log("Length is >= 50; Decoding T2 message");
 					const parsedT1Message =
@@ -96,7 +95,7 @@ export function NtlmClient(
 					console.log("T3 message created", t3Msg, "Alt:", at3Msg);
 
 					error.config.headers["X-retry"] = "false";
-					error.config.headers["Authorization"] = at3Msg;
+					error.config.headers["Authorization"] = t3Msg;
 				}
 
 				if (error.config.responseType === "stream") {

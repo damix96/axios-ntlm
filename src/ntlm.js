@@ -24,7 +24,14 @@ function createType1Message(workstation, target) {
 	pos += 4;
 
 	//flags
-	buf.writeUInt32LE(2718478855, pos);
+	buf.writeUInt32LE(
+		flags.NTLMFLAG_NEGOTIATE_OEM |
+			flags.NTLMFLAG_REQUEST_TARGET |
+			flags.NTLMFLAG_NEGOTIATE_NTLM_KEY |
+			flags.NTLMFLAG_NEGOTIATE_NTLM2_KEY |
+			flags.NTLMFLAG_NEGOTIATE_ALWAYS_SIGN,
+		pos
+	);
 	pos += 4;
 
 	//domain security buffer
@@ -321,7 +328,7 @@ function createType3Message(
 		buf.writeUInt32LE(0, 56);
 
 		//flags
-		buf.writeUInt32LE(2726855173, 60);
+		buf.writeUInt32LE(type2Message.flags, 60);
 	}
 
 	return "NTLM " + buf.toString("base64", 0, dataPos);
