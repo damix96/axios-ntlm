@@ -321,7 +321,7 @@ function createType3Message(
 		buf.writeUInt32LE(0, 56);
 
 		//flags
-		buf.writeUInt32LE(type2Message.flags, 60);
+		buf.writeUInt32LE(2726855173, 60);
 	}
 
 	return "NTLM " + buf.toString("base64", 0, dataPos);

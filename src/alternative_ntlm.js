@@ -125,7 +125,7 @@ function createType1Message(options) {
 	pos += workstation.length; // workstation string
 	if (domain.length != 0) buf.write(domain, pos, domain.length, "ascii");
 	pos += domain.length; // domain string
-
+	console.log("Alternative flags 1: ", { type1flags });
 	return "NTLM " + buf.toString("base64");
 }
 
