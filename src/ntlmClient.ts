@@ -4,7 +4,7 @@ import axios, {
 	AxiosRequestConfig,
 	AxiosResponse,
 } from "axios";
-import * as ntlm from "./ntlm";
+import * as ntlm from "./alternative_ntlm";
 import * as https from "https";
 import * as http from "http";
 import devnull from "dev-null";
@@ -51,7 +51,7 @@ export function NtlmClient(
 			return response;
 		},
 		async (err: AxiosError) => {
-			const error: any = err.response;
+			const error: AxiosResponse | undefined = err.response;
 
 			if (
 				error &&
@@ -90,7 +90,7 @@ export function NtlmClient(
 				}
 
 				if (error.config.responseType === "stream") {
-					const stream: http.IncomingMessage | any = err.response?.data;
+					const stream: http.IncomingMessage | undefined = err.response?.data;
 					// Read Stream is holding HTTP connection open in our
 					// TCP socket. Close stream to recycle back to the Agent.
 					if (stream && !stream.readableEnded) {

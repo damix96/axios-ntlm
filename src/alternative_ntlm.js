@@ -130,14 +130,14 @@ function createType1Message(options) {
 }
 
 function parseType2Message(rawmsg) {
-	var match = rawmsg.match(/NTLM (.+)?/);
-	if (!match || !match[1]) {
-		throw new Error(
-			"Couldn't find NTLM in the message type2 comming from the server"
-		);
-	}
-
-	var buf = new Buffer(match[1], "base64");
+	// var match = rawmsg.match(/NTLM (.+)?/);
+	// if (!match || !match[1]) {
+	// 	throw new Error(
+	// 		"Couldn't find NTLM in the message type2 comming from the server"
+	// 	);
+	// }
+	// var buf = new Buffer(match[1], "base64");
+	var buf = new Buffer(rawmsg, "base64");
 
 	var msg = {};
 
@@ -527,8 +527,17 @@ function ntlm2sr_calc_resp(responseKeyNT, serverChallenge, clientChallenge) {
 	};
 }
 
-exports.createType1Message = createType1Message;
+exports.createType1Message = (workstation, domain) =>
+	createType1Message({ workstation, domain });
 exports.parseType2Message = parseType2Message;
-exports.createType3Message = createType3Message;
+exports.decodeType2Message = parseType2Message;
+exports.createType3Message = (
+	type2Message,
+	username,
+	password,
+	workstation,
+	domain
+) =>
+	createType3Message(type2Message, { username, password, workstation, domain });
 exports.create_NT_hashed_password = create_NT_hashed_password_v1;
 exports.create_LM_hashed_password = create_LM_hashed_password_v1;
