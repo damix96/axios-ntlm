@@ -56,6 +56,7 @@ export function NtlmClient(
 			if (
 				error &&
 				error.status === 401 &&
+				error.config.headers &&
 				error.headers["www-authenticate"] &&
 				error.headers["www-authenticate"].includes("NTLM")
 			) {
@@ -90,7 +91,7 @@ export function NtlmClient(
 				}
 
 				if (error.config.responseType === "stream") {
-					const stream: http.IncomingMessage | undefined = err.response?.data;
+					const stream: any = err.response?.data;
 					// Read Stream is holding HTTP connection open in our
 					// TCP socket. Close stream to recycle back to the Agent.
 					if (stream && !stream.readableEnded) {
