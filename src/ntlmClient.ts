@@ -38,11 +38,19 @@ export function NtlmClient(
 	let config: AxiosRequestConfig = AxiosConfig ?? {};
 
 	if (!config.httpAgent) {
-		config.httpAgent = new http.Agent({ keepAlive: true });
+		config.httpAgent = new http.Agent({
+			keepAlive: true,
+			maxSockets: 1,
+			keepAliveMsecs: 5000,
+		});
 	}
 
 	if (!config.httpsAgent) {
-		config.httpsAgent = new https.Agent({ keepAlive: true });
+		config.httpsAgent = new https.Agent({
+			keepAlive: true,
+			maxSockets: 1,
+			keepAliveMsecs: 5000,
+		});
 	}
 	config.maxRedirects = 0;
 	const client = axios.create(config);
