@@ -10,7 +10,7 @@ import * as http from "http";
 import devnull from "dev-null";
 
 export { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse };
-
+export const wait = (ms: number) => new Promise(res => setTimeout(res, ms));
 /**
  * @property username The username of the user you are authenticating as.
  * @property password The password of the user you are authenticating as.
@@ -45,23 +45,14 @@ export function NtlmClient(
 	}
 
 	const client = axios.create(config);
-	client.interceptors.request.use(
-		val => {
-			console.log(Object.keys(val), val);
-			return val;
-		},
-		err => {
-			console.log(Object.keys(err), err);
-			throw err;
-		}
-	);
+
 	client.interceptors.response.use(
 		response => {
 			return response;
 		},
 		async (err: AxiosError) => {
 			const error: AxiosResponse | undefined = err.response;
-
+			console.log(error);
 			if (
 				error &&
 				error.status === 401 &&
@@ -109,7 +100,8 @@ export function NtlmClient(
 						});
 					}
 				}
-
+				console.log("new config is ", error.config);
+				await wait(1000);
 				return client(error.config);
 			} else {
 				throw err;
