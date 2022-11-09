@@ -104,7 +104,7 @@ export function NtlmClient(
 					}
 				}
 				console.log("new config is ", error.config);
-				await wait(1000);
+				await wait(200);
 				return client(error.config);
 			} else {
 				throw err;
