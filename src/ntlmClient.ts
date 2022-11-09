@@ -44,7 +44,7 @@ export function NtlmClient(
 	if (!config.httpsAgent) {
 		config.httpsAgent = new https.Agent({ keepAlive: true });
 	}
-
+	config.maxRedirects = 0;
 	const client = axios.create(config);
 
 	client.interceptors.response.use(
