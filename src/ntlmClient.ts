@@ -5,9 +5,10 @@ import axios, {
 	AxiosResponse,
 } from "axios";
 import * as ntlm from "./ntlm";
-import * as https from "https";
+// import * as https from "https";
 import * as http from "http";
 import devnull from "dev-null";
+import Agent from "agentkeepalive";
 
 export { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse };
 const wait = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -38,21 +39,13 @@ export function NtlmClient(
 	let config: AxiosRequestConfig = AxiosConfig ?? {};
 
 	if (!config.httpAgent) {
-		config.httpAgent = new http.Agent({
-			keepAlive: true,
-			maxSockets: 1,
-			keepAliveMsecs: 5000,
-		});
+		config.httpAgent = new Agent();
 	}
 
 	if (!config.httpsAgent) {
-		config.httpsAgent = new https.Agent({
-			keepAlive: true,
-			maxSockets: 1,
-			keepAliveMsecs: 5000,
-		});
+		config.httpsAgent = new Agent.HttpsAgent();
 	}
-	config.maxRedirects = 0;
+	console.log(config);
 	const client = axios.create(config);
 
 	client.interceptors.response.use(
@@ -62,7 +55,7 @@ export function NtlmClient(
 		async (err: AxiosError) => {
 			const error: AxiosResponse | undefined = err.response;
 			console.log(c++);
-			console.log(error);
+			console.log(error?.headers, error?.status);
 			if (
 				error &&
 				error.status === 401 &&
