@@ -5,14 +5,11 @@ import axios, {
 	AxiosResponse,
 } from "axios";
 import * as ntlm from "./ntlm";
-// import * as https from "https";
+import * as https from "https";
 import * as http from "http";
 import devnull from "dev-null";
-import Agent from "agentkeepalive";
-
 export { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse };
-const wait = (ms: number) => new Promise(res => setTimeout(res, ms));
-let c = 0;
+
 /**
  * @property username The username of the user you are authenticating as.
  * @property password The password of the user you are authenticating as.
@@ -39,13 +36,16 @@ export function NtlmClient(
 	let config: AxiosRequestConfig = AxiosConfig ?? {};
 
 	if (!config.httpAgent) {
-		config.httpAgent = new Agent();
+		config.httpAgent = new http.Agent({ keepAlive: true });
+	} else {
+		config.httpAgent.options.keepAlive = true;
 	}
 
 	if (!config.httpsAgent) {
-		config.httpsAgent = new Agent.HttpsAgent();
+		config.httpsAgent = new https.Agent({ keepAlive: true });
+	} else {
+		config.httpsAgent.options.keepAlive = true;
 	}
-	console.log(config);
 	const client = axios.create(config);
 
 	client.interceptors.response.use(
@@ -54,8 +54,6 @@ export function NtlmClient(
 		},
 		async (err: AxiosError) => {
 			const error: AxiosResponse | undefined = err.response;
-			console.log(c++);
-			console.log(error?.headers, error?.status);
 			if (
 				error &&
 				error.status === 401 &&
@@ -103,8 +101,7 @@ export function NtlmClient(
 						});
 					}
 				}
-				console.log("new config is ", error.config);
-				await wait(200);
+
 				return client(error.config);
 			} else {
 				throw err;
