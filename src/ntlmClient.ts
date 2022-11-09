@@ -10,7 +10,8 @@ import * as http from "http";
 import devnull from "dev-null";
 
 export { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse };
-export const wait = (ms: number) => new Promise(res => setTimeout(res, ms));
+const wait = (ms: number) => new Promise(res => setTimeout(res, ms));
+let c = 0;
 /**
  * @property username The username of the user you are authenticating as.
  * @property password The password of the user you are authenticating as.
@@ -52,6 +53,7 @@ export function NtlmClient(
 		},
 		async (err: AxiosError) => {
 			const error: AxiosResponse | undefined = err.response;
+			console.log(c++);
 			console.log(error);
 			if (
 				error &&

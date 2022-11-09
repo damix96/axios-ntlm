@@ -1,6 +1,5 @@
 import { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 export { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse };
-export declare const wait: (ms: number) => Promise<unknown>;
 /**
  * @property username The username of the user you are authenticating as.
  * @property password The password of the user you are authenticating as.
